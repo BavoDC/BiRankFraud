@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Bavo Campo" />
+
+<meta name="date" content="2020-01-24" />
+
+<title>Fraud detection via social network analysis</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Fraud detection via social network analysis</h1>
+<h4 class="author">Bavo Campo</h4>
+<h4 class="date">2020-01-24</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#social-networks">Social networks</a><ul>
+<li><a href="#computing-fraud-scores-birank-algorithm">Computing fraud scores: BiRank algorithm</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="social-networks" class="section level1">
+<h1>Social networks</h1>
+<p>One of the possible approaches to detect suspicious claims in insurance is through the use of social networks. Considering that social relations are of great importance in organized crime, such as fraud, social network analytics is particularly well suited for fraud detection. With this method, social structures are analyzed using networks and graph theory. The rationale is that fraudulent activity can be detected by measuring proximity to known fraudulent cases or exposure to nearby fraudulent claims.</p>
+<p>An example of such a social network is shown in Figure @ref(fig:SampleNetwork). The social network consists of claims and parties, with the latter being defined as all entities that are not claims (e.g. policyholder, broker, experts, …). In this example, there are 5 claims of which 1 is fraudulent. Claims that are closer to the fraudulent claim are regarded as more suspicious than claims that are further removed (e.g. C5 should be regarded as more suspicious than C2). Hence, ideally we should arrive at a score that indicates which claims are regarded as more suspicious than others.</p>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Sample network" />
+<p class="caption">
+Sample network
+</p>
+</div>
+<div id="computing-fraud-scores-birank-algorithm" class="section level2">
+<h2>Computing fraud scores: BiRank algorithm</h2>
+<p>Ideally, we should be able to rank claims based on their proximity to known fraudulent claims. Claims that are closer to known fraudulent claims should be regarded as more suspicious than claims that are closer to (known) non-fraudulent claims. This ranking should be reflected in what we will call the fraud score. The higher the fraud score, the more suspicious the claim. To compute this fraud score, we make use of the BiRank algorithm.</p>
+<p>The BiRank algorithm requires two pieces of information on the network in order to be able to compute the fraud scores. The first piece of information is a database that indicates which parties are connected to which claims. For our example, this is illustrated in <a href="#tab:Edges">Table 1</a>.</p>
+<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;" id="tab:Edges">
+<thead>
+<tr>
+<td colspan="2" style="text-align: left;">
+Table 1: Edges network
+</td>
+</tr>
+<tr>
+<th style="background: lightgrey; padding-left: .5em; padding-right: .2em; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
+start node
+</th>
+<th style="background: lightgrey; padding-left: .5em; padding-right: .2em; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
+end node
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">
+P1
+</td>
+<td style="text-align: center;">
+C1
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+P1
+</td>
+<td style="text-align: center;">
+C2
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+P2
+</td>
+<td style="text-align: center;">
+C3
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+P2
+</td>
+<td style="text-align: center;">
+C1
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+P3
+</td>
+<td style="text-align: center;">
+C3
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+P3
+</td>
+<td style="text-align: center;">
+C4
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+P3
+</td>
+<td style="text-align: center;">
+C1
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+P3
+</td>
+<td style="text-align: center;">
+C5
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+P4
+</td>
+<td style="text-align: center;">
+C5
+</td>
+</tr>
+<tr>
+<td style="border-bottom: 2px solid grey; text-align: center;">
+P4
+</td>
+<td style="border-bottom: 2px solid grey; text-align: center;">
+C2
+</td>
+</tr>
+</tbody>
+</table>
+<p>In addition, we need to convey to the algorithm which claims are known to be fraudulent and which are not (see <a href="#tab:FraudInd">Table 2</a>).</p>
+<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;" id="tab:FraudInd">
+<thead>
+<tr>
+<td colspan="1" style="text-align: left;">
+Table 2: Fraud indicator
+</td>
+</tr>
+<tr>
+<th style="background: lightgrey; padding-left: .5em; padding-right: .2em; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
+Fraud indicator
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+1
+</td>
+</tr>
+<tr>
+<td style="border-bottom: 2px solid grey; text-align: center;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(BiRankFraud)</a>
+<a class="sourceLine" id="cb1-2" title="2">NetwLabel =<span class="st"> </span><span class="kw">data.frame</span>(</a>
+<a class="sourceLine" id="cb1-3" title="3">  <span class="dt">startNode =</span> <span class="kw">c</span>(<span class="st">&#39;P2&#39;</span>, <span class="st">&#39;P3&#39;</span>, <span class="st">&#39;P3&#39;</span>, <span class="st">&#39;C1&#39;</span>, <span class="st">&#39;C1&#39;</span>, <span class="st">&#39;C5&#39;</span>, <span class="st">&#39;P1&#39;</span>, <span class="st">&#39;P4&#39;</span>, <span class="st">&#39;C2&#39;</span>, <span class="st">&#39;C2&#39;</span>),</a>
+<a class="sourceLine" id="cb1-4" title="4">  <span class="dt">endNode =</span> <span class="kw">c</span>(<span class="st">&#39;C3&#39;</span>, <span class="st">&#39;C3&#39;</span>, <span class="st">&#39;C4&#39;</span>, <span class="st">&#39;P2&#39;</span>, <span class="st">&#39;P3&#39;</span>, <span class="st">&#39;P3&#39;</span>, <span class="st">&#39;C1&#39;</span>, <span class="st">&#39;C5&#39;</span>, <span class="st">&#39;P1&#39;</span>, <span class="st">&#39;P4&#39;</span>),</a>
+<a class="sourceLine" id="cb1-5" title="5">  <span class="dt">stringsAsFactors =</span> F</a>
+<a class="sourceLine" id="cb1-6" title="6">)</a>
+<a class="sourceLine" id="cb1-7" title="7">NetwLabel[<span class="kw">grepl</span>(<span class="st">&quot;C&quot;</span>, NetwLabel<span class="op">$</span>startNode), <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>] =<span class="st"> </span>NetwLabel[<span class="kw">grepl</span>(<span class="st">&quot;C&quot;</span>, NetwLabel<span class="op">$</span>startNode), <span class="dv">2</span><span class="op">:</span><span class="dv">1</span>] </a>
+<a class="sourceLine" id="cb1-8" title="8">NetwLabel =<span class="st"> </span>NetwLabel[<span class="kw">order</span>(NetwLabel<span class="op">$</span>startNode), ]</a>
+<a class="sourceLine" id="cb1-9" title="9">NetwLabel<span class="op">$</span>FraudInd =<span class="st"> </span><span class="kw">sapply</span>(NetwLabel<span class="op">$</span>endNode, <span class="cf">function</span>(x)</a>
+<a class="sourceLine" id="cb1-10" title="10">  <span class="cf">if</span> (x <span class="op">==</span><span class="st"> &quot;C4&quot;</span>)</a>
+<a class="sourceLine" id="cb1-11" title="11">    <span class="dv">1</span></a>
+<a class="sourceLine" id="cb1-12" title="12">  <span class="cf">else</span></a>
+<a class="sourceLine" id="cb1-13" title="13">    <span class="dv">0</span>)</a>
+<a class="sourceLine" id="cb1-14" title="14">NetwLabel<span class="op">$</span>startNode =<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">gsub</span>(<span class="st">&quot;P&quot;</span>, <span class="st">&quot;&quot;</span>, NetwLabel<span class="op">$</span>startNode))</a>
+<a class="sourceLine" id="cb1-15" title="15">NetwLabel<span class="op">$</span>endNode   =<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">gsub</span>(<span class="st">&quot;C&quot;</span>, <span class="st">&quot;&quot;</span>, NetwLabel<span class="op">$</span>endNode))</a>
+<a class="sourceLine" id="cb1-16" title="16">Results  =<span class="st"> </span><span class="kw">BiRankFr</span>(NetwLabel, <span class="kw">data.frame</span>(<span class="dt">FraudInd =</span> c0))</a></code></pre></div>
+<p>Using this, we are then able to compute the fraud scores and the resulting scores are shown in <a href="#tab:FraudScores">Table 3</a>. In this table, C4 is given the highest score which is in line with our expectations as this claim is known to be fraudulent. Following C4, claims C1, C3 and C5 are the ones with the highest scores and looking back at Figure @ref(fig:SampleNetwork), we see that these are closest to C4. Conversely, C2 is the claim that is the furthest from C4 and hence, has the lowest fraud score of all claims.</p>
+<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;" id="tab:FraudScores">
+<thead>
+<tr>
+<td colspan="4" style="text-align: left;">
+Table 3: Fraud scores
+</td>
+</tr>
+<tr>
+<th style="background: lightgrey; padding-left: .5em; padding-right: .2em; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
+Claim
+</th>
+<th style="background: lightgrey; padding-left: .5em; padding-right: .2em; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
+Fraud score
+</th>
+<th style="background: lightgrey; padding-left: .5em; padding-right: .2em; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
+Std score
+</th>
+<th style="background: lightgrey; padding-left: .5em; padding-right: .2em; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
+Scaled score
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">
+4
+</td>
+<td style="text-align: center;">
+0.262
+</td>
+<td style="text-align: center;">
+1.701
+</td>
+<td style="text-align: center;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+1
+</td>
+<td style="text-align: center;">
+0.144
+</td>
+<td style="text-align: center;">
+-0.101
+</td>
+<td style="text-align: center;">
+0.315
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+3
+</td>
+<td style="text-align: center;">
+0.132
+</td>
+<td style="text-align: center;">
+-0.278
+</td>
+<td style="text-align: center;">
+0.248
+</td>
+</tr>
+<tr>
+<td style="text-align: center;">
+5
+</td>
+<td style="text-align: center;">
+0.125
+</td>
+<td style="text-align: center;">
+-0.393
+</td>
+<td style="text-align: center;">
+0.204
+</td>
+</tr>
+<tr>
+<td style="border-bottom: 2px solid grey; text-align: center;">
+2
+</td>
+<td style="border-bottom: 2px solid grey; text-align: center;">
+0.089
+</td>
+<td style="border-bottom: 2px solid grey; text-align: center;">
+-0.929
+</td>
+<td style="border-bottom: 2px solid grey; text-align: center;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+<p>Summarized, we attempt to detect fraudulent claims by use of social network analysis. Using the BiRank algorithm, we compute fraud scores that indicate the proximity of different claims to known fraudulent claims. Claims that are closer to known fraudulent claims get a higher score and are regarded as more suspicious as claims with a lower score.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

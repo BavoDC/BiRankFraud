@@ -1,0 +1,14 @@
+Package: BiRankFraud
+Type: Package
+Title: Computing fraud score using the BiRank algorithm
+Version: 0.1.0
+Authors@R: person("Campo", "Bavo", role = c("aut", "cre"),
+		     email = "bavo.decock@kuleuven.be")
+Description: Computing fraud score using the BiRank algorithm
+License: GPL (>= 2)
+Depends: Matrix, lubridate
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.0.2
