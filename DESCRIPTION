@@ -5,7 +5,7 @@ Version: 0.1.0
 Authors@R: person("Campo", "Bavo", role = c("aut", "cre"),
 		     email = "bavo.decock@kuleuven.be")
 Description: Computing fraud score using the BiRank algorithm
-License: GPL (>= 2)
+License: GPL (>= 3)
 Depends: Matrix, lubridate
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
